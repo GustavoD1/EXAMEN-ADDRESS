@@ -14,8 +14,9 @@ import TextRegular from '../../components/TextRegular'
 import TextError from '../../components/TextError'
 import { prepareEntityImages } from '../../api/helpers/FileUploadHelper'
 import { buildInitialValues } from '../Helper'
+import AddressScreen from './AddressScreen'
 
-export default function ProfileScreen({ navigation, route }) {
+export default function ProfileScreen ({ navigation, route }) {
   const { loggedInUser, signOut, updateProfile } = useContext(AuthorizationContext)
   const [backendErrors, setBackendErrors] = useState()
 
@@ -154,14 +155,14 @@ export default function ProfileScreen({ navigation, route }) {
                   {backendErrors &&
                     backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)
                   }
-                  <Pressable  /* TODO: Implementa el reenvio a la pantalla pertinente */  
+                  <Pressable onPress={() => navigation.navigate('AddressScreen')}
                     style={({ pressed }) => [
-                        {
-                          backgroundColor: pressed
-                            ? GlobalStyles.brandSuccessTap
-                            : GlobalStyles.brandSuccess
-                        },
-                        styles.button]} 
+                      {
+                        backgroundColor: pressed
+                          ? GlobalStyles.brandSuccessTap
+                          : GlobalStyles.brandSuccess
+                      },
+                      styles.button]}
                     >
                     <TextRegular textStyle={styles.text}>Edit Shipping address</TextRegular>
                   </Pressable>

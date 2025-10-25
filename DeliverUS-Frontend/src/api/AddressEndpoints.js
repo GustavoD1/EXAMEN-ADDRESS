@@ -1,19 +1,19 @@
 import { get, post, patch, destroy } from './helpers/ApiRequestsHelper'
 
-function getAddresses (data) {
-  //TODO
+function getAddresses () {
+  return get('/shippingaddresses')
 }
 
 function addAddress (data) {
-  //TODO
+  return post(data)
 }
 
 function setDefault (id) {
-  //TODO
+  return patch(id)
 }
 
 function deleteAddress (id) {
-  //TODO
+  return destroy(id)
 }
 
-export { getAddresses, addAddress, setDefault, /* TODO */  }
+export { getAddresses, addAddress, setDefault, deleteAddress }
