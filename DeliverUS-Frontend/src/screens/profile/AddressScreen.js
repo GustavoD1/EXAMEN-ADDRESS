@@ -9,20 +9,19 @@ import { showMessage } from 'react-native-flash-message'
 import { Ionicons } from '@expo/vector-icons'
 import DeleteModal from '../../components/DeleteModal'
 
-
-export default function AddressScreen({ navigation, route }) {
+export default function AddressScreen ({ navigation, route }) {
   const [addresses, setAddresses] = useState([])
   const [error, setError] = useState(null)
   const [addressToBeDeleted, setAddressToBeDeleted] = useState(null)
 
-  //TODO
+  // TODO
   return (
     <>
-    
+
     </>
   )
 }
 
 const styles = StyleSheet.create({
-  //TODO
+  // TODO
 })
