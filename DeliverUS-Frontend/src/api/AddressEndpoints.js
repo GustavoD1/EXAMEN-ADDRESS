@@ -13,7 +13,7 @@ function setDefault (id) {
 }
 
 function deleteAddress (id) {
-  return destroy(id)
+  return destroy(`/shippingaddresses/${id}`)
 }
 
 export { getAddresses, addAddress, setDefault, deleteAddress }

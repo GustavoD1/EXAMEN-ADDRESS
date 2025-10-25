@@ -82,7 +82,7 @@ export default function AddressScreen ({ navigation, route }) {
               <Ionicons name= {item.isDefault ? 'star' : 'star-outline'} size={24} color={'#FFC107'} />
           </Pressable>
           <Pressable
-            onPress={(console.log('Funciona la basura'))}
+            onPress={(() => setAddressToBeDeleted(item))}
             style={({ pressed }) => [
               {
                 backgroundColor: 'transparent'
@@ -99,6 +99,29 @@ export default function AddressScreen ({ navigation, route }) {
 
   const renderSeparator = () => {
     return <View style={styles.separator} />
+  }
+
+  const removeAddress = async (value) => {
+    try {
+      await deleteAddress(value.id)
+      setAddressToBeDeleted(null)
+      fetchAddresses()
+      showMessage({
+        message: `Address ${value.alias} succesfully removed`,
+        type: 'success',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setAddressToBeDeleted(null)
+      showMessage({
+        message: `Address ${value.alias} could not be removed.`,
+        type: 'error',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+    }
   }
 
   return (
@@ -126,6 +149,12 @@ export default function AddressScreen ({ navigation, route }) {
               Añadir nueva dirección
             </TextRegular> }
           </Pressable>
+          <DeleteModal
+            isVisible={addressToBeDeleted !== null}
+            onCancel={() => setAddressToBeDeleted(null)}
+            onConfirm={() => removeAddress(addressToBeDeleted)}>
+              <TextRegular>¿Seguro que quieres eliminar esta dirección?</TextRegular>
+            </DeleteModal>
         </View>
     </>
   )
