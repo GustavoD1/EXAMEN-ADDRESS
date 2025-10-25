@@ -9,7 +9,7 @@ function addAddress (data) {
 }
 
 function setDefault (id) {
-  return patch(id)
+  return patch(`/shippingaddresses/${id}/default`)
 }
 
 function deleteAddress (id) {

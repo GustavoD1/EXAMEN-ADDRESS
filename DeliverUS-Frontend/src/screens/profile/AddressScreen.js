@@ -15,22 +15,23 @@ export default function AddressScreen ({ navigation, route }) {
   const [addressToBeDeleted, setAddressToBeDeleted] = useState(null)
 
   useEffect(() => {
-    async function fetchAddresses () {
-      try {
-        const fetchedAddresses = await getAddresses()
-
-        setAddresses(fetchedAddresses)
-      } catch (error) {
-        showMessage({
-          message: `There was an error while retrieving addresses. ${error} `,
-          type: 'error',
-          style: flashStyle,
-          titleStyle: flashTextStyle
-        })
-      }
-    }
     fetchAddresses()
   }, [route])
+
+  async function fetchAddresses () {
+    try {
+      const fetchedAddresses = await getAddresses()
+
+      setAddresses(fetchedAddresses)
+    } catch (error) {
+      showMessage({
+        message: `There was an error while retrieving addresses. ${error} `,
+        type: 'error',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+    }
+  }
 
   const renderHeader = () => {
     return (
@@ -38,6 +39,26 @@ export default function AddressScreen ({ navigation, route }) {
           <TextSemiBold textStyle={styles.textTitle}>{'Mis direcciones'}</TextSemiBold>
         </View>
     )
+  }
+
+  const handleSetDefault = async (values) => {
+    try {
+      await setDefault(values.id)
+      fetchAddresses()
+      showMessage({
+        message: 'Dirección predeterminada actualizada correctamente.',
+        type: 'success',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+    } catch (error) {
+      showMessage({
+        message: `Error al establecer la dirección como predeterminada: ${error}`,
+        type: 'error',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+    }
   }
 
   const renderAddresses = ({ item }) => {
@@ -51,7 +72,7 @@ export default function AddressScreen ({ navigation, route }) {
       </View>
       <View style={{ flexDirection: 'row' }}>
         <Pressable
-            onPress={(console.log('Funciona la estrella'))}
+            onPress={() => handleSetDefault(item)}
             style={({ pressed }) => [
               {
                 backgroundColor: 'transparent'
