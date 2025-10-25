@@ -1,58 +1,58 @@
-import React from 'react'
-import { StyleSheet, View, ScrollView, KeyboardAvoidingView, Platform, Pressable, Switch } from 'react-native' // NOTESE EL USO DE SWITCH
+import React, { useState } from 'react'
+import { StyleSheet, View, ScrollView, KeyboardAvoidingView, Platform, Pressable, Switch } from 'react-native'
 import { Formik } from 'formik'
 import * as yup from 'yup'
 import InputItem from '../../components/InputItem'
 import TextSemibold from '../../components/TextSemibold'
+import * as GlobalStyles from '../../styles/GlobalStyles'
 import { addAddress } from '../../api/AddressEndpoints'
 import { showMessage } from 'react-native-flash-message'
-import { brandPrimary, brandPrimaryTap, brandSuccessDisabled, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
+import { brandPrimary, brandPrimaryTap, brandSuccessDisabled } from '../../styles/GlobalStyles'
+import TextError from '../../components/TextError'
 
-export default function AddressDetailScreen ({ navigation, route }) {
-  const initialAddressValues = { alias: null, street: null, city: null, zipCode: null, province: null, isDefault: false }
+export default function AddAddressScreen ({ navigation }) {
+  const [backendErrors, setBackendErrors] = useState()
+
+  const initialValues = {
+    id: null,
+    alias: '',
+    street: '',
+    city: '',
+    province: '',
+    zipCode: '',
+    isDefault: false
+  }
+
   const validationSchema = yup.object().shape({
-    alias: yup
-      .string()
-      .max(255, 'Alias too long')
-      .required('Alias is required'),
-    street: yup
-      .string()
-      .max(255, 'Street too long')
-      .required('Street is required'),
-    city: yup
-      .string()
-      .max(255, 'City too long')
-      .required('City is required'),
-    zipCode: yup
-      .number()
-      .positive('Please provide a positive zip code value')
-      .required('Price is required'),
-    province: yup
-      .string()
-      .max(255, 'Province too long')
-      .required('Province is required'),
-    isDefault: yup
-      .boolean()
+    alias: yup.string().required('El alias es obligatorio'),
+    street: yup.string().required('La calle es obligatoria'),
+    city: yup.string().required('La ciudad es obligatoria'),
+    province: yup.string(),
+    zipCode: yup.string()
+      .matches(/^[0-9]{5}$/, 'Código postal debe tener 5 dígitos')
+      .required('El código postal es obligatorio')
   })
 
   const createAddress = async (values) => {
+    setBackendErrors([])
     try {
-      const createdAddress = await addAddress(values)
+      const address = await addAddress(values)
       showMessage({
-        message: `Address ${createdAddress.alias} succesfully created`,
+        message: `Dirección ${address.alias} guardada`,
         type: 'success',
-        style: flashStyle,
-        titleStyle: flashTextStyle
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
       })
       navigation.navigate('AddressScreen', { dirty: true })
     } catch (error) {
       console.log(error)
+      setBackendErrors(error.errors)
     }
   }
 
   return (
     <Formik
-      initialValues={initialAddressValues}
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={createAddress}
     >
@@ -62,61 +62,44 @@ export default function AddressDetailScreen ({ navigation, route }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.keyboardView}
           >
-          <View style={{ alignItems: 'center' }}>
-            <View style={{ width: '95%' }}>
-              <TextSemibold textStyle={styles.title}>Nueva dirección</TextSemibold>
-              <InputItem
-                name='alias'
-                label='Alias:'
-                placeholder='Casa, Trabajo...'
-              />
-              <InputItem
-                name='street'
-                label='Calle:'
-                placeholder='Ej: Mejos 1'
-              />
-              <InputItem
-                name='city'
-                label='Ciudad:'
-                placeholder='Ej: Dos Hermanas'
-              />
-              <InputItem
-                name='province'
-                label='Provincia:'
-                placeholder='Ej: Sevilla'
-              />
-              <InputItem
-                name='zipCode'
-                label='Código postal:'
-                placeholder='41700'
-              />
+            <View style={styles.container}>
+              <TextSemibold textStyle={styles.title}>
+                Nueva dirección
+              </TextSemibold>
+
+              <InputItem label="Alias" name="alias" placeholder="Casa, Trabajo..." />
+              <InputItem label="Calle" name="street" placeholder="Ej: Mejos 1" />
+              <InputItem label="Ciudad" name="city" placeholder="Ej: Dos Hermanas" />
+              <InputItem label="Provincia" name="province" placeholder="Ej: Sevilla" />
+              <InputItem label="Código postal" name="zipCode" placeholder="41700" keyboardType="numeric" />
+
               <View style={styles.toggleContainer}>
-              <TextSemibold>Dirección predeterminada</TextSemibold>
-              <Switch
-                thumbColor={brandSuccessDisabled}
-                value={values.isDefault}
-                style={styles.switch}
-                onValueChange={value =>
-                  setFieldValue('isDefault', value)
-                }
-              />
+                <TextSemibold textStyle={styles.toggleLabel}>
+                  Dirección predeterminada
+                </TextSemibold>
+                <Switch
+                  value={values.isDefault}
+                  onValueChange={val => setFieldValue('isDefault', val)}
+                  thumbColor={values.isDefault ? brandPrimary : brandSuccessDisabled}
+                  trackColor={{ true: brandPrimaryTap, false: '#ccc' }}
+                />
               </View>
+
+              {backendErrors &&
+                backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)}
+
               <Pressable
                 onPress={handleSubmit}
+                disabled={!isValid}
                 style={({ pressed }) => [
-                  {
-                    backgroundColor: brandSuccessDisabled
-                  },
-                  styles.button
-                ]}>
-                <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
-                  <TextSemibold textStyle={styles.buttonText}>
-                    Guardar dirección
-                  </TextSemibold>
-                </View>
+                  { backgroundColor: pressed ? brandPrimaryTap : brandPrimary },
+                  styles.button,
+                  !isValid && { backgroundColor: brandSuccessDisabled }
+                ]}
+              >
+                <TextSemibold textStyle={styles.buttonText}>Guardar dirección</TextSemibold>
               </Pressable>
             </View>
-          </View>
           </KeyboardAvoidingView>
         </ScrollView>
       )}
@@ -137,8 +120,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    marginBottom: 15,
-    marginTop: 15
+    marginBottom: 15
   },
   button: {
     borderRadius: 8,
@@ -159,14 +141,5 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 16
-  },
-  switch: {
-    marginTop: 5
-  },
-  text: {
-    fontSize: 16,
-    color: 'white',
-    textAlign: 'center',
-    marginLeft: 5
   }
 })
