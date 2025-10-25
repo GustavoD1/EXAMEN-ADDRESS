@@ -6,19 +6,55 @@ import InputItem from '../../components/InputItem'
 import TextSemibold from '../../components/TextSemibold'
 import { addAddress } from '../../api/AddressEndpoints'
 import { showMessage } from 'react-native-flash-message'
-import { brandPrimary, brandPrimaryTap, brandSuccessDisabled } from '../../styles/GlobalStyles'
+import { brandPrimary, brandPrimaryTap, brandSuccessDisabled, flashStyle, flashTextStyle } from '../../styles/GlobalStyles'
 
 export default function AddressDetailScreen ({ navigation, route }) {
+  const initialAddressValues = { alias: null, street: null, city: null, zipCode: null, province: null, isDefault: false }
   const validationSchema = yup.object().shape({
-    // TODO
+    alias: yup
+      .string()
+      .max(255, 'Alias too long')
+      .required('Alias is required'),
+    street: yup
+      .string()
+      .max(255, 'Street too long')
+      .required('Street is required'),
+    city: yup
+      .string()
+      .max(255, 'City too long')
+      .required('City is required'),
+    zipCode: yup
+      .number()
+      .positive('Please provide a positive zip code value')
+      .required('Price is required'),
+    province: yup
+      .string()
+      .max(255, 'Province too long')
+      .required('Province is required'),
+    isDefault: yup
+      .boolean()
   })
-  // TODO
+
+  const createAddress = async (values) => {
+    try {
+      const createdAddress = await addAddress(values)
+      showMessage({
+        message: `Address ${createdAddress.alias} succesfully created`,
+        type: 'success',
+        style: flashStyle,
+        titleStyle: flashTextStyle
+      })
+      navigation.navigate('AddressScreen', { dirty: true })
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={initialAddressValues}
       validationSchema={validationSchema}
-      onSubmit={handleSubmit}
+      onSubmit={createAddress}
     >
       {({ handleSubmit, isValid, values, setFieldValue }) => (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -26,7 +62,61 @@ export default function AddressDetailScreen ({ navigation, route }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.keyboardView}
           >
-            TODO
+          <View style={{ alignItems: 'center' }}>
+            <View style={{ width: '95%' }}>
+              <TextSemibold textStyle={styles.title}>Nueva dirección</TextSemibold>
+              <InputItem
+                name='alias'
+                label='Alias:'
+                placeholder='Casa, Trabajo...'
+              />
+              <InputItem
+                name='street'
+                label='Calle:'
+                placeholder='Ej: Mejos 1'
+              />
+              <InputItem
+                name='city'
+                label='Ciudad:'
+                placeholder='Ej: Dos Hermanas'
+              />
+              <InputItem
+                name='province'
+                label='Provincia:'
+                placeholder='Ej: Sevilla'
+              />
+              <InputItem
+                name='zipCode'
+                label='Código postal:'
+                placeholder='41700'
+              />
+              <View style={styles.toggleContainer}>
+              <TextSemibold>Dirección predeterminada</TextSemibold>
+              <Switch
+                thumbColor={brandSuccessDisabled}
+                value={values.isDefault}
+                style={styles.switch}
+                onValueChange={value =>
+                  setFieldValue('isDefault', value)
+                }
+              />
+              </View>
+              <Pressable
+                onPress={handleSubmit}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: brandSuccessDisabled
+                  },
+                  styles.button
+                ]}>
+                <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
+                  <TextSemibold textStyle={styles.buttonText}>
+                    Guardar dirección
+                  </TextSemibold>
+                </View>
+              </Pressable>
+            </View>
+          </View>
           </KeyboardAvoidingView>
         </ScrollView>
       )}
@@ -47,7 +137,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    marginBottom: 15
+    marginBottom: 15,
+    marginTop: 15
   },
   button: {
     borderRadius: 8,
@@ -68,5 +159,14 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 16
+  },
+  switch: {
+    marginTop: 5
+  },
+  text: {
+    fontSize: 16,
+    color: 'white',
+    textAlign: 'center',
+    marginLeft: 5
   }
 })

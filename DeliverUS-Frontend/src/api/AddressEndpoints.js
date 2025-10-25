@@ -5,7 +5,7 @@ function getAddresses () {
 }
 
 function addAddress (data) {
-  return post(data)
+  return post('/shippingaddresses', data)
 }
 
 function setDefault (id) {
